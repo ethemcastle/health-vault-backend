@@ -35,9 +35,9 @@ static/
 .collected_static/
 
 # Ignore secrets and configs
-.env
-*.env
-.env.*
+#.env
+#*.env
+#.env.*
 
 # -----------------------------------------------------------------------------
 # Migrations
