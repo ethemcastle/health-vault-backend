@@ -1,0 +1,94 @@
+# -----------------------------------------------------------------------------
+# Python
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+*.pyo
+*.pyd
+*.pkl
+*.log
+*.sqlite3
+*.db
+
+# -----------------------------------------------------------------------------
+# Virtual environment
+# -----------------------------------------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+
+# -----------------------------------------------------------------------------
+# Django / DRF
+# -----------------------------------------------------------------------------
+*.pot
+*.pyc
+*.mo
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+static/
+.collected_static/
+
+# Ignore secrets and configs
+.env
+*.env
+.env.*
+
+# -----------------------------------------------------------------------------
+# Migrations
+# -----------------------------------------------------------------------------
+# Keep migrations in Git, but ignore auto-generated cache files
+**/migrations/*
+!**/migrations/__init__.py
+# Uncomment the next line if you really want to ignore migrations (not recommended)
+# */migrations/
+
+# -----------------------------------------------------------------------------
+# IDE / Editors
+# -----------------------------------------------------------------------------
+.vscode/
+.idea/
+*.iml
+*.sublime-workspace
+*.sublime-project
+
+# -----------------------------------------------------------------------------
+# Mac / Linux / Windows
+# -----------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# -----------------------------------------------------------------------------
+# Logs / Reports
+# -----------------------------------------------------------------------------
+*.log
+*.out
+*.err
+coverage/
+htmlcov/
+.tox/
+.nox/
+.cache/
+.pytest_cache/
+.coverage
+.coverage.*
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+*.hypothesis/
+test-results/
+junit.xml
+
+# -----------------------------------------------------------------------------
+# OpenAPI / Swagger generated schema (optional)
+# -----------------------------------------------------------------------------
+openapi-schema.json
