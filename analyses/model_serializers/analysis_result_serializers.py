@@ -2,24 +2,19 @@ from rest_framework import serializers
 from analyses.models import AnalysisResult
 
 
+
 class AnalysisResultReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnalysisResult
-        fields = [
-            "id", "analysis", "name", "value", "unit",
-            "reference_low", "reference_high", "reference_text",
-            "measured_at", "sort_key",
-            "date_created", "date_last_updated",
-        ]
-        read_only_fields = ["id", "date_created", "date_last_updated"]
+        fields = ["id", "test_name", "value", "unit", "reference_range", "measured_at", "date_created", "date_last_updated"]
 
 
 class AnalysisResultWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnalysisResult
         fields = [
-            "id", "analysis", "name", "value", "unit",
-            "reference_low", "reference_high", "reference_text",
-            "measured_at", "sort_key",
+            "id", "analysis", "test_name", "value", "unit",
+            "reference_range",
+            "measured_at",
         ]
         read_only_fields = ["id"]

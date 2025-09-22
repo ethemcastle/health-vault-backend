@@ -6,16 +6,11 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import serializers
 
+from analyses.model_serializers.analysis_result_serializers import AnalysisResultReadSerializer
 from analyses.models import Analysis, AnalysisResult
 from analyses.services.ocr import save_ocr_output
 
 User = get_user_model()
-
-
-class AnalysisResultReadSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AnalysisResult
-        fields = ["id", "test_name", "value", "unit", "reference_range", "measured_at", "date_created", "date_last_updated"]
 
 
 class AnalysisReadSerializer(serializers.ModelSerializer):
