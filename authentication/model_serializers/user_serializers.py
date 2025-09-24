@@ -102,8 +102,6 @@ class UserSelfUpdateSerializer(serializers.ModelSerializer):
 
 
 
-
-
 class AdminUserWriteSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(choices=[ADMIN, DOCTOR, PATIENT], required=True, write_only=True)
     doctor_profile = serializers.DictField(required=False, write_only=True)
@@ -122,16 +120,30 @@ class AdminUserWriteSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        request = self.context.get("request")
+        requester_role = getattr(getattr(getattr(request, "user", None), "group", None), "name", None)
+
         role = attrs.get("role")
+
+        # Doctors may only create Patients
+        if requester_role == DOCTOR:
+            if role != PATIENT:
+                raise serializers.ValidationError({"role": "Doctors can only create Patient accounts."})
+            if "doctor_profile" in attrs:
+                raise serializers.ValidationError({"doctor_profile": "Not allowed when creator is Doctor."})
+
+        # Prevent weird mixes
         if role == DOCTOR and "patient_profile" in attrs:
             raise serializers.ValidationError({"patient_profile": "Not allowed when role is Doctor."})
         if role == PATIENT and "doctor_profile" in attrs:
             raise serializers.ValidationError({"doctor_profile": "Not allowed when role is Patient."})
+
         return attrs
 
     @transaction.atomic
     def create(self, validated_data: Dict[str, Any]) -> User:
         from profiles.models import DoctorProfile, PatientProfile
+
         password = validated_data.pop("password")
         role = validated_data.pop("role")
         doctor_data = validated_data.pop("doctor_profile", None)
@@ -165,13 +177,22 @@ class AdminUserWriteSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def update(self, instance: User, validated_data: Dict[str, Any]) -> User:
         from profiles.models import DoctorProfile, PatientProfile
+
+        request = self.context.get("request")
+        requester_role = getattr(getattr(getattr(request, "user", None), "group", None), "name", None)
+
         password = validated_data.pop("password", None)
         role = validated_data.pop("role", None)
         doctor_data = validated_data.pop("doctor_profile", None)
         patient_data = validated_data.pop("patient_profile", None)
 
+        # Doctors cannot change a user's role to anything but Patient
+        if requester_role == DOCTOR and role and role != PATIENT:
+            raise serializers.ValidationError({"role": "Doctors cannot change role to non-Patient."})
+
         for k, v in validated_data.items():
             setattr(instance, k, v)
+
         if password:
             instance.set_password(password)
 
@@ -181,14 +202,17 @@ class AdminUserWriteSerializer(serializers.ModelSerializer):
 
         instance.save()
 
-        if role == DOCTOR or (instance.group and instance.group.name == DOCTOR):
+        # Maintain profiles
+        effective_role = role or getattr(getattr(instance, "group", None), "name", None)
+
+        if effective_role == DOCTOR:
             dp, _ = DoctorProfile.objects.get_or_create(user=instance)
             if doctor_data:
                 for k, v in doctor_data.items():
                     setattr(dp, k, v)
                 dp.save()
 
-        if role == PATIENT or (instance.group and instance.group.name == PATIENT):
+        if effective_role == PATIENT:
             pp, _ = PatientProfile.objects.get_or_create(user=instance)
             if patient_data:
                 for k, v in patient_data.items():
@@ -197,6 +221,7 @@ class AdminUserWriteSerializer(serializers.ModelSerializer):
 
         return instance
 
+    # Render output using the read serializer so we include derived `role` + nested profiles
     def to_representation(self, instance: User) -> Dict[str, Any]:
         from .user_serializers import UserReadSerializer
         return UserReadSerializer(instance, context=self.context).data

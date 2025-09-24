@@ -72,6 +72,19 @@ class IsAdminOrOwner(BasePermission):
         return _has_role(request.user, [ADMIN]) or getattr(obj, "user_id", None) == getattr(request.user, "id", None)
 
 
+class IsAdminOrDoctorForCreate(BasePermission):
+    def has_permission(self, request: Request, view) -> bool:
+        if not _is_authenticated(request.user):
+            return False
+
+        if request.method == "POST":
+            return _has_role(request.user, [ADMIN, DOCTOR])
+        if request.method == "GET":
+            return _has_role(request.user, [ADMIN, DOCTOR])
+
+        return _has_role(request.user, [ADMIN])
+
+
 class IsParticipantInConsentOrAdmin(BasePermission):
     """
     For PatientDoctorConsent objects:

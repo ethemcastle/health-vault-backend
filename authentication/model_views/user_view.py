@@ -4,66 +4,67 @@ from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
 from rest_framework.permissions import IsAuthenticated
 
+from authentication.const import ADMIN, DOCTOR
 from core.api_views import BaseLCAPIView, BaseRUDAPIView
 from authentication.model_serializers.user_serializers import (
     UserReadSerializer,
     UserSelfUpdateSerializer,
     AdminUserWriteSerializer,
 )
-from core.permissions import IsAdmin, IsAdminOrOwner
+from core.permissions import IsAdmin, IsAdminOrOwner, IsAdminOrDoctorForCreate
+from profiles.models import PatientDoctorConsent
 
 User = get_user_model()
 
 
+
 class UserListCreateView(BaseLCAPIView):
-    """
-    List all users (Admin). Create via admin if you want, but your public signup handles normal users.
-    """
     queryset = User.objects.select_related("group").all()
     read_serializer_class = UserReadSerializer
     write_serializer_class = AdminUserWriteSerializer
     list_read_serializer_class = UserReadSerializer
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated, IsAdminOrDoctorForCreate]
 
-    # Optional: enable filtering by role ?role=Doctor|Patient|Admin
     def get_queryset(self) -> QuerySet[User]:
         qs = super().get_queryset()
-        role = self.request.query_params.get("role")
-        if role:
-            qs = qs.filter(group__name=role)
-        search = self.request.query_params.get("q")
-        if search:
-            qs = qs.filter(email__icontains=search)
-        return qs
+        user = self.request.user
+        role = getattr(getattr(user, "group", None), "name", None)
+
+        # Admin: full list
+        if role == ADMIN:
+            role_param = self.request.query_params.get("role")
+            if role_param:
+                qs = qs.filter(group__name=role_param)
+            q = self.request.query_params.get("q")
+            if q:
+                qs = qs.filter(email__icontains=q)
+            return qs
+
+        # Doctor: only their patients (assuming Consent model links them)
+        if role == DOCTOR:
+            patient_ids = PatientDoctorConsent.objects.filter(
+                doctor=user, is_active=True
+            ).values_list("patient_id", flat=True)
+            return qs.filter(id__in=patient_ids)
+
+        # Patients cannot list other users
+        return qs.none()
 
 
 class UserRUDView(BaseRUDAPIView):
-    """
-    Retrieve/Update/Delete a user.
-    - Admin can retrieve/update/delete any user.
-    - A user can retrieve/update themself (no role/group change).
-    """
     queryset = User.objects.select_related("group").all()
     read_serializer_class = UserReadSerializer
-    # write serializer will be chosen dynamically
     permission_classes = [IsAuthenticated, IsAdminOrOwner]
 
     def get_serializer_class(self):
-        # Admins can use admin write serializer (role/profile updates).
-        # Owners use self-update serializer.
+        # Admin can fully edit (role, profiles); others can edit self basics only
         if self.request and self.request.method in ("PUT", "PATCH"):
-            if self.request.user and getattr(getattr(self.request.user, "group", None), "name", None) == "Admin":
-                return AdminUserWriteSerializer
-            return UserSelfUpdateSerializer
+            is_admin = getattr(getattr(self.request.user, "group", None), "name", None) == ADMIN
+            return AdminUserWriteSerializer if is_admin else UserSelfUpdateSerializer
         return super().get_serializer_class()
 
-    # (Optional) ensure non-admins can only act on themselves at the queryset level too
     def get_queryset(self) -> QuerySet[User]:
         qs = super().get_queryset()
-        user = getattr(self.request, "user", None)
-        if not user or not user.is_authenticated:
-            return qs.none()
-        is_admin = getattr(getattr(user, "group", None), "name", None) == "Admin"
-        if is_admin:
-            return qs
-        return qs.filter(id=user.id)
+        user = self.request.user
+        is_admin = getattr(getattr(user, "group", None), "name", None) == ADMIN
+        return qs if is_admin else qs.filter(id=user.id)
