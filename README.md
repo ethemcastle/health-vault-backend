@@ -39,9 +39,9 @@ Enter password: `root`
 
 Then run:
 ```sql
-CREATE DATABASE wrestling_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE health_vault_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER 'root'@'localhost' IDENTIFIED BY 'root';
-GRANT ALL PRIVILEGES ON wrestling_db.* TO 'root'@'localhost';
+GRANT ALL PRIVILEGES ON health_vault_db.* TO 'root'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
@@ -95,7 +95,7 @@ DB_PORT=3306
 ```bash
 python manage.py makemigrations
 python manage.py migrate
-python manage.py backfill_default_grou
+python manage.py backfill_default_group
 ```
 
 ---

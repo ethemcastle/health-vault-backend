@@ -32,6 +32,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
+    'localhost:5173'
     'localhost:4200',
     'localhost:8181',
     '127.0.0.1',
@@ -39,7 +40,11 @@ ALLOWED_HOSTS = [
     '0.0.0.0',
     '0.0.0.0:8181'
 ]
-CSRF_TRUSTED_ORIGINS = ['http://localhost:4200/']
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+CSRF_TRUSTED_ORIGINS = ['http://localhost:4200/',  "http://localhost:5173", "http://127.0.0.1:5173"]
 CORS_ALLOW_ALL_ORIGINS = True
 
 SESSION_COOKIE_SECURE = env("SESSION_COOKIE_SECURE", default=False, cast=bool)
@@ -51,6 +56,7 @@ SECURE_HSTS_PRELOAD = env("SECURE_HSTS_PRELOAD", default=False, cast=bool)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', env("HTTP_X_FORWARDED_PROTO", default='http', cast=str))
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -73,6 +79,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
