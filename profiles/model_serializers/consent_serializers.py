@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from authentication.const import DOCTOR, PATIENT
 from profiles.models import PatientDoctorConsent
 
 
@@ -24,7 +26,10 @@ class ConsentWriteSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
     def validate(self, attrs):
-        # optional: ensure patient != doctor
-        if attrs["patient_id"] == attrs["doctor_id"]:
+        if attrs["patient"].id == attrs["doctor"].id:
             raise serializers.ValidationError("Patient and doctor must be different users.")
+        if attrs["doctor"].group.name != DOCTOR:
+            raise serializers.ValidationError("User is not a doctor.")
+        if attrs["patient"].group.name != PATIENT:
+            raise serializers.ValidationError("User is not a patient.")
         return attrs
