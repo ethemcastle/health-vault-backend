@@ -5,10 +5,8 @@ from django.db import transaction, models
 from rest_framework import serializers
 
 from authentication.const import DOCTOR, PATIENT, ADMIN
-from profiles.model_serializers.doctor_profile_serializers import DoctorProfileReadSerializer, \
-    DoctorProfileWriteSerializer
-from profiles.model_serializers.patient_profile_serializers import PatientProfileReadSerializer, \
-    PatientProfileWriteSerializer
+from profiles.model_serializers.doctor_profile_serializers import DoctorProfileReadSerializer
+from profiles.model_serializers.patient_profile_serializers import PatientProfileReadSerializer
 
 User = get_user_model()
 

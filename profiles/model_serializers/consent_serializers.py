@@ -1,22 +1,25 @@
 from rest_framework import serializers
 
 from authentication.const import DOCTOR, PATIENT
+from authentication.model_serializers.user_serializers import UserReadSerializer
 from profiles.models import PatientDoctorConsent
 
 
 class ConsentReadSerializer(serializers.ModelSerializer):
-    patient_email = serializers.EmailField(source="patient.email", read_only=True)
-    doctor_email = serializers.EmailField(source="doctor.email", read_only=True)
+    doctor = serializers.SerializerMethodField()
+    patient = serializers.SerializerMethodField()
 
     class Meta:
         model = PatientDoctorConsent
-        fields = [
-            "id", "patient", "patient_email",
-            "doctor", "doctor_email",
-            "scope", "expires_at", "is_active",
-            "date_created", "date_last_updated",
-        ]
-        read_only_fields = ["id", "patient_email", "doctor_email", "date_created", "date_last_updated"]
+        fields = ["id", "doctor", "patient", "is_active", "scope", "date_created", "date_last_updated"]
+
+    @staticmethod
+    def get_doctor(obj):
+        return UserReadSerializer(obj.doctor).data
+
+    @staticmethod
+    def get_patient(obj):
+        return UserReadSerializer(obj.patient).data
 
 
 class ConsentWriteSerializer(serializers.ModelSerializer):
