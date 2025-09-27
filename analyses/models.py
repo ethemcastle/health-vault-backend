@@ -23,6 +23,7 @@ class Analysis(BaseModel):
     ocr_language = models.CharField(max_length=16, default="eng")
 
     report_date = models.DateField(blank=True, null=True)
+    order_id = models.CharField(max_length=128, unique=True)
 
     def __str__(self):
         return self.title or f"Analysis #{self.id}"
