@@ -1,4 +1,3 @@
-from analyses.filters import AnalysesResultFilter
 from core.api_views import BaseLCAPIView, BaseRUDAPIView
 from analyses.models import AnalysisResult
 from analyses.model_serializers.analysis_result_serializers import AnalysisResultReadSerializer, AnalysisResultWriteSerializer
@@ -11,7 +10,6 @@ class AnalysisResultListCreateView(BaseLCAPIView):
     write_serializer_class = AnalysisResultWriteSerializer
     list_read_serializer_class = AnalysisResultReadSerializer
     permission_classes = [CanWritePatientData]
-    filterset_class = AnalysesResultFilter
 
 
 class AnalysisResultRUDView(BaseRUDAPIView):
