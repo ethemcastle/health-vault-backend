@@ -18,13 +18,13 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path("api/authentication/", include("authentication.urls", namespace="authentication")),
-    path("api/profiles/", include("profiles.urls", namespace="profiles")),
-    path("api/analyses/", include("analyses.urls", namespace="analyses")),
-    path("api/notes/", include("notes.urls", namespace="notes")),
-    path("api/reminders/", include("reminders.urls", namespace="reminders")),
-    path("api/notifications/", include("notifications.urls", namespace="notifications")),
-    path("api/auditlog/", include("audit.urls", namespace="audit")),
+    path("authentication/", include("authentication.urls", namespace="authentication")),
+    path("profiles/", include("profiles.urls", namespace="profiles")),
+    path("analyses/", include("analyses.urls", namespace="analyses")),
+    path("notes/", include("notes.urls", namespace="notes")),
+    path("reminders/", include("reminders.urls", namespace="reminders")),
+    path("notifications/", include("notifications.urls", namespace="notifications")),
+    path("auditlog/", include("audit.urls", namespace="audit")),
 
     path("api/schema/swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     path("api/schema/redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
